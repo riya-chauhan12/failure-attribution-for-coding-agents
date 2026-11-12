@@ -1,39 +1,96 @@
+
 Failure Attribution for Coding Agents
 
-A rule-based failure attribution system that helps coding agents understand whether a code change fixed an issue, caused a regression, or left an existing failure unchanged.
+<p align="center">
+  <strong>Helping AI coding agents understand what went wrong after a code change.</strong>
+</p><p align="center">
+  A lightweight, rule-based system for analyzing test failures, tracking code changes, and identifying potential regressions.
+</p>---
 
-Overview
+🔍 The Problem
 
-The system compares test results before and after a code change and examines the Git diff to classify the outcome. It includes an original classifier, an improved classifier, and a synthetic benchmark for evaluation.
+When an AI coding agent modifies code and tests fail, it needs to understand why they failed.
 
-Classification Labels
+Was the failure already present? Did the change introduce a regression? Did the modification make progress, or did nothing actually change?
 
-Label| Meaning
+Without this distinction, an agent may revert useful changes, repeat unsuccessful fixes, or commit broken code.
+
+💡 The Approach
+
+Failure Attribution for Coding Agents analyzes test results before and after a code change, alongside the Git diff, to determine the likely cause of a failure.
+
+The system combines test-output comparison with code-change evidence to produce an attribution label that can guide the agent's next decision.
+
+⚙️ How It Works
+
+       Code Change
+            │
+            ▼
+    Run Tests (Before)
+            │
+            ▼
+    Run Tests (After)
+            │
+            ▼
+    Compare Test Results
+            │
+            ▼
+      Analyze Git Diff
+            │
+            ▼
+    Failure Attribution
+            │
+            ▼
+     Classification Label
+
+🧠 Classification System
+
+The classifier produces one of seven labels:
+
+Label| Interpretation
 "PASSED"| Tests pass after the change.
-"PRE_EXISTING_ENV"| Failure existed before the code change.
-"NO_EFFECT"| The change did not affect the failure.
-"PROGRESS"| Evidence suggests improvement.
+"PRE_EXISTING_ENV"| Evidence suggests the failure existed before the change or is environment-related.
+"NO_EFFECT"| The change did not meaningfully affect the failure.
+"PROGRESS"| Evidence suggests the change improved the outcome.
 "REGRESSION_LIKELY"| Evidence suggests the change introduced a failure.
-"UNKNOWN"| Evidence is insufficient or ambiguous.
-"NO_SIGNAL"| No meaningful test result is available.
+"UNKNOWN"| Available evidence is insufficient or ambiguous.
+"NO_SIGNAL"| No meaningful test result is available for attribution.
 
-Project Files
+🛠️ Project Components
 
-File| Description
-"failure_attribution_kaggle.ipynb"| Classifier implementations, synthetic benchmark, and evaluation.
-"attribution_prompt_snippet_v2.md"| Prompt instructions for applying failure attribution in coding agents.
+File| Purpose
+"failure_attribution_kaggle.ipynb"| Implements the attribution classifiers and synthetic benchmark experiments.
+"attribution_prompt_snippet_v2.md"| Provides instructions for applying failure attribution in coding-agent workflows.
 
-How It Works
+🧪 Evaluation
 
-1. Capture test results before a code change.
-2. Run the same tests after the change.
-3. Compare failures, error messages, and test outcomes.
-4. Inspect the Git diff for relevant code changes.
-5. Assign an attribution label based on the available evidence.
+The project uses a synthetic benchmark containing author-created scenarios to examine how different attribution approaches classify failures.
 
-Setup and Usage
+The evaluation compares:
 
-Requirements: Python 3.12+, Git, and pytest.
+- The original rule-based classifier.
+- An improved attribution classifier.
+- A deterministic emulation of the prompt-based attribution rules.
+
+The experiments focus on classification accuracy, false regression predictions, and the handling of pre-existing failures.
+
+Important: These results are limited to the constructed benchmark. They do not establish performance on real-world repositories or prove that attribution improves coding-agent recovery.
+
+🚀 Getting Started
+
+Requirements
+
+- Python 3.12+
+- Git
+- Jupyter Notebook
+- pytest
+- NumPy
+- pandas
+- Matplotlib
+- seaborn
+- scikit-learn
+
+Installation
 
 Clone the repository:
 
@@ -50,20 +107,31 @@ jupyter notebook failure_attribution_kaggle.ipynb
 
 Run the notebook cells in order.
 
-Evaluation and Limitations
+⚠️ Current Limitations
 
-- Evaluated using a synthetic benchmark of author-created scenarios.
-- Results are limited to the scenarios and test conditions included in the benchmark.
+- Evaluation currently relies on a synthetic benchmark.
+- The benchmark scenarios are author-created and relatively small.
 - The prompt instructions have not yet been evaluated with a live coding agent or LLM.
-- The project does not yet establish whether failure attribution improves real-world agent recovery.
+- Performance on external repositories and real-world software failures remains untested.
+- The impact of failure attribution on agent recovery decisions has not yet been established.
 
-Future Work
+🔮 Future Directions
 
-- Evaluate with real coding agents and LLMs.
-- Test on external repositories and real software failures.
-- Improve handling of ambiguous environment and regression cases.
-- Investigate whether attribution improves agent recovery decisions.
+- Evaluate the system with real AI coding agents and LLMs.
+- Test attribution on external open-source repositories.
+- Improve detection of ambiguous environment failures and regressions.
+- Explore how attribution labels can guide agent recovery strategies.
+- Investigate whether better failure attribution leads to more reliable code changes.
 
-Author
+---
+
+👩‍💻 Author
 
 Riya Chauhan
+
+
+---
+
+<p align="center">
+  <i>Building more reliable feedback and decision-making systems for AI coding agents.</i>
+</p>
