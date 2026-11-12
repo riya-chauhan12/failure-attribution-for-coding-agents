@@ -1,0 +1,12 @@
+# BEFORE/AFTER FAILURE ATTRIBUTION (revised; insert in Step 4 of the system prompt)
+Capture a baseline BEFORE your first edit, then compare AFTER it. Use the SAME test command both times and set PYTHONDONTWRITEBYTECODE=1 so edited files are really re-read.
+**Do not use -x for the baseline or the comparison run.** -x stops at the first failure, so a failure that already existed but was never reached can look new after you fix an earlier one. Use a full run of the affected test files.
+- Before editing (one call): run timeout 150 env PYTHONDONTWRITEBYTECODE=1 python -m pytest TESTFILE -q -k KEYWORD > /tmp/before.txt 2>&1 ; tail -15 /tmp/before.txt
+- After editing, same command but > /tmp/after.txt, then in one call: grep -E "^E  |^(FAILED|ERROR)" /tmp/before.txt > /tmp/b.sig ; grep -E "^E  |^(FAILED|ERROR)" /tmp/after.txt > /tmp/a.sig ; diff /tmp/b.sig /tmp/a.sig && echo SAME || echo CHANGED ; git diff --stat
+Decide from the comparison, not from the error text alone. Treat every conclusion as evidence, not proof:
+1. Tests pass: go to the final check. A passing visible test is not proof; confirm every literal name and message from the issue appears in git diff, and that you did not edit the tests to make them pass.
+2. SAME, and the error is a missing top-level third-party package or missing fixture that your diff did not add: a pre-existing environmental problem. Stop spending effort on the confirmed environmental issue, verify the implementation independently (for example python -c to import your edited module, py_compile, reading the diff against the issue), and do not treat the patch as validated until appropriate checks pass.
+3. SAME and it is an assertion or logic error: your edit did not change the behaviour. Make a different change.
+4. CHANGED and the new error names something you renamed or removed, or the traceback passes through a file you edited, or a test that passed before now fails: this is evidence consistent with a regression associated with your edit. Inspect the diff and traceback; fix it, or undo that part with git checkout -- FILE if confirmed.
+5. CHANGED, but the failure text only changed (no earlier test now passes, no clear link to your edit), or no baseline exists: treat as UNKNOWN. Keep investigating; never stop early on an unclear failure.
+Note: a missing module with a dotted name (pkg.sub) can be a repository file you must create OR a missing submodule of an installed package; check which before calling it environmental.
